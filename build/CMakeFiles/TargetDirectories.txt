@@ -1,3 +1,0 @@
-/home/grigoriy/Documents/GitHub/yolo_on_cpp/build/CMakeFiles/YoloDemo.dir
-/home/grigoriy/Documents/GitHub/yolo_on_cpp/build/CMakeFiles/edit_cache.dir
-/home/grigoriy/Documents/GitHub/yolo_on_cpp/build/CMakeFiles/rebuild_cache.dir
