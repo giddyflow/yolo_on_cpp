@@ -5,7 +5,7 @@
 #include <opencv2/dnn.hpp>
 
 // --- НАСТРОЙКИ ДЛЯ YOLO ---
-const float CONF_THRESHOLD = 0.5f;    // Порог уверенности для детекции
+const float CONF_THRESHOLD = 0.7f;    // Порог уверенности для детекции
 const float NMS_THRESHOLD = 0.4f;     // Порог для non-maximum suppression
 const int INPUT_WIDTH = 416;          // Ширина изображения для входа в сеть
 const int INPUT_HEIGHT = 416;         // Высота изображения для входа в сеть
