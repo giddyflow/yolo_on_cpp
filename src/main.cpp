@@ -4,11 +4,10 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/dnn.hpp>
 
-// --- НАСТРОЙКИ ДЛЯ YOLO ---
 const float CONF_THRESHOLD = 0.7f;    // Порог уверенности для детекции
 const float NMS_THRESHOLD = 0.4f;     // Порог для non-maximum suppression
-const int INPUT_WIDTH = 416;          // Ширина изображения для входа в сеть
-const int INPUT_HEIGHT = 416;         // Высота изображения для входа в сеть
+const int INPUT_WIDTH = 416;          
+const int INPUT_HEIGHT = 416;         
 
 int main() {
 
@@ -16,7 +15,6 @@ int main() {
     std::string modelConfig = "yolov4-tiny.cfg";
     std::string classesFile = "coco.names";
 
-    // 1. Загрузка имен классов
     std::vector<std::string> classes;
     std::ifstream ifs(classesFile.c_str());
     if (!ifs.is_open()) {
@@ -29,7 +27,6 @@ int main() {
     }
     std::cout << "Classes loaded successfully." << std::endl;
 
-    // 2. Загрузка нейронной сети
     cv::dnn::Net net = cv::dnn::readNetFromDarknet(modelConfig, modelWeights);
     std::cout << "Network loaded successfully." << std::endl;
     
@@ -38,13 +35,11 @@ int main() {
     // net.setPreferableBackend(cv::dnn::DNN_BACKEND_CUDA);
     // net.setPreferableTarget(cv::dnn::DNN_TARGET_CUDA);
     
-    // По умолчанию используется CPU
     net.setPreferableBackend(cv::dnn::DNN_BACKEND_OPENCV);
     net.setPreferableTarget(cv::dnn::DNN_TARGET_CPU);
     std::cout << "Using CPU for inference." << std::endl;
 
 
-    // --- ИНИЦИАЛИЗАЦИЯ КАМЕРЫ ---
     cv::VideoCapture cap(0);
     if (!cap.isOpened()) {
         std::cerr << "CRITICAL ERROR: Cannot open the camera." << std::endl;
@@ -54,7 +49,6 @@ int main() {
 
     cv::Mat frame;
 
-    // --- ГЛАВНЫЙ ЦИКЛ ОБРАБОТКИ ---
     while (true) {
         bool isSuccess = cap.read(frame);
         if (!isSuccess || frame.empty()) {
@@ -72,10 +66,9 @@ int main() {
         std::vector<cv::Mat> outs;
         net.forward(outs, net.getUnconnectedOutLayersNames());
 
-        // --- ОБРАБОТКА РЕЗУЛЬТАТОВ ---
-        std::vector<int> classIds;
-        std::vector<float> confidences;
-        std::vector<cv::Rect> boxes;
+        std::vector<int> classIds; //храним id найденных объектов
+        std::vector<float> confidences; // коэффы уверенности для найденных объектов
+        std::vector<cv::Rect> boxes; // храним рамки объектов
 
         for (const auto& out : outs) {
             float* data = (float*)out.data;
@@ -104,7 +97,6 @@ int main() {
         std::vector<int> indices;
         cv::dnn::NMSBoxes(boxes, confidences, CONF_THRESHOLD, NMS_THRESHOLD, indices);
 
-        // --- ОТРИСОВКА РЕЗУЛЬТАТОВ НА КАДРЕ ---
         for (int idx : indices) {
             cv::Rect box = boxes[idx];
             int classId = classIds[idx];
@@ -112,7 +104,6 @@ int main() {
             // Рисуем рамку
             cv::rectangle(frame, box, cv::Scalar(0, 255, 0), 2);
 
-            // Формируем и рисуем подпись
             std::string label = classes[classId] + ": " + cv::format("%.2f", confidences[idx]);
             int baseLine;
             cv::Size labelSize = cv::getTextSize(label, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
@@ -123,16 +114,14 @@ int main() {
             cv::putText(frame, label, cv::Point(box.x, top - 5), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 0));
         }
         
-        // Отображаем кадр с результатами
         cv::imshow("YOLO Live Detection", frame);
 
-        if (cv::waitKey(1) == 27) { // Выход по клавише ESC
+        if (cv::waitKey(1) == 27) {
             std::cout << "ESC key pressed. Exiting..." << std::endl;
             break;
         }
     }
 
-    // Освобождение ресурсов
     cap.release();
     cv::destroyAllWindows();
     return 0;
